@@ -1,0 +1,273 @@
+<<<<<<< HEAD
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+
+/// <summary>
+/// Скрипт, в котором происходит запуск файлов диалогов в RPGTalk-е и обработка вариантов выбора
+/// </summary>
+public class DialogManager : MonoBehaviour
+{
+    /// <summary>
+    /// Список текстовых файлов для диалогов.
+    /// </summary>
+    [SerializeField] private List<TextAsset> _textAssets;
+
+    /// <summary>
+    /// Список названий диалогов.
+    /// </summary>
+    [SerializeField] private List<string> _textAssetsNames;
+
+    /// <summary>
+    /// Словарь диалогов, где ключ - его имя, а значение - текстовый файл
+    /// </summary>
+    private Dictionary<string, TextAsset> _dictionaryOfTextAssets = new Dictionary<string, TextAsset>();
+
+    /// <summary>
+    /// Индекс текущего диалога
+    /// </summary>
+    public int _currentDialogIndex;
+
+    /// <summary>
+    /// Список текстовых файлов для выборов вариантов ответов.
+    /// </summary>
+    [SerializeField] private List<TextAsset> _textAssetsForChoices;
+
+    /// <summary>
+    /// Список названий вариантов.
+    /// </summary>
+    [SerializeField] private List<string> _textAssetsNamesForChoices;
+
+    /// <summary>
+    /// Словарь вариантов, где ключ - его имя, а значение - текстовый файл
+    /// </summary>
+    private Dictionary<string, TextAsset> _textAssetsForChoicesDictionary = new Dictionary<string, TextAsset>();
+
+    /// <summary>
+    /// Через него отключаем возможность двигаться для ГГ
+    /// </summary>
+    public Character characterScript;
+
+    /// <summary>
+    /// При помощи него запускаем idle анимацию чулка во время диалогов
+    /// </summary>
+    private Animator _characterAnimator;
+
+    /// <summary>
+    /// При помощи него запускаем DialogStarted; получаем доступ к _statsUIController, чтобы его не добавлять сюда как serializeField
+    /// </summary>
+    public CollidingManager colidingManager;
+    
+    /// <summary>
+    /// RPGTalk, для которого этот DialogManager прикреплён
+    /// </summary>
+    public RPGTalk rPGTalk;
+
+    /// <summary>
+    /// Компонент RPGTalkSwitcher
+    /// </summary>
+    public RPGTalkSwitcher rpgTalkSwitcher;
+
+    private void Start()
+    {
+        rPGTalk.OnMadeChoice += OnMadeChoice;
+        if (characterScript != null)
+        {
+            _characterAnimator = characterScript.gameObject.GetComponent<Animator>();
+        }
+        // Составляем словари текстовых файлов и названий
+        for (int i = 0; i < _textAssetsForChoices.Count; i++)
+        {
+            _textAssetsForChoicesDictionary.Add(_textAssetsNamesForChoices[i], _textAssetsForChoices[i]);
+        }
+        for (int i = 0; i < _textAssets.Count; i++)
+        {
+            _dictionaryOfTextAssets.Add(_textAssetsNames[i], _textAssets[i]);
+        }
+    }
+
+    /// <summary>
+    /// Запускает диалог по его названию или по порядку, если название не указано.
+    /// </summary>
+    public void PlayDialog(string dialogName = "", int loopedUpperIndex = -1, int loopedLowerIndex = -1)
+    {
+        if (_characterAnimator != null)
+        {
+            _characterAnimator.Play("StockingIdle");
+        }
+        if (dialogName == "")
+        {
+            rPGTalk.NewTalk("1", "-1", _textAssets[_currentDialogIndex]);
+            if (_currentDialogIndex + 1 < _textAssets.Count)
+            {
+                _currentDialogIndex++;
+            }
+            else if (loopedUpperIndex != -1)
+            {
+                _currentDialogIndex = loopedUpperIndex;
+            }
+        }
+        // иначе запускаем диалог по его имени
+        else
+        {
+            rPGTalk.NewTalk("1", "-1", _dictionaryOfTextAssets[dialogName]);
+        }
+    }
+
+    /// <summary>
+    /// Обработчик выборов в диалогах
+    /// /<summary>
+    private void OnMadeChoice(string questionID, int choiceNumber)
+    {
+        // Действия для запуска диалога
+        characterScript.SetInactive();
+        _characterAnimator.Play("StockingIdle");
+        colidingManager.DialogStarted();
+        rpgTalkSwitcher.TurnOnCurrentTurnOffOthers(rPGTalk);
+        switch (questionID)
+        {
+            case "1": // Разговор с Санычемы
+                {
+                    switch (choiceNumber)
+                    {
+                        case 0: // Вариант с Обэмой
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["true"]); // Запуск нового диалога
+                                DataHolder.AddWatchers();
+                                rPGTalk.callback.AddListener(colidingManager._statsUIController.LoadCurrent); // Добавляем ему в колбэки - перезагрузить данные на gui
+                                // и включить все RPGTalk-и на сцене
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                rPGTalk.callback.AddListener(gameObject.GetComponent<AudioSource>().Play);
+                                break;
+                            }
+                        case 1: // Вариант с панк-роком
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["false"]);
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                break;
+                            }
+                        case 2: // Вариант с абхчибой
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["true"]);
+                                DataHolder.AddWatchers();
+                                rPGTalk.callback.AddListener(colidingManager._statsUIController.LoadCurrent);
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                rPGTalk.callback.AddListener(gameObject.GetComponent<AudioSource>().Play);
+                                break;
+                            }
+                    }
+                    break;
+                }
+            case "2": // Разговор с Работягами
+                {
+                    switch (choiceNumber)
+                    {
+                        case 0: // Вариант "кого ты там назвал быдлой"
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["bidlo"]);
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                break;
+                            }
+                        case 1: // Вариант кто ещё будет дома строить
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["family"]);
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                break;
+                            }
+                        case 2: // Согласие
+                            {
+                                rPGTalk.NewTalk("1", "-1", _textAssetsForChoicesDictionary["true"]);
+                                DataHolder.AddWatchers();
+                                rPGTalk.callback.AddListener(colidingManager._statsUIController.LoadCurrent);
+                                rPGTalk.callback.AddListener(rpgTalkSwitcher.TurnOnAll);
+                                rPGTalk.callback.AddListener(gameObject.GetComponent<AudioSource>().Play);
+                                break;
+                            }
+                    }
+=======
+using UnityEngine;
+
+public class DialogManager : MonoBehaviour
+{
+    // ��������� ����� ����� ������, ���� �� ��� ������, �� ���������� ������ ��� ������� �� e
+    private bool _isClick = false;
+
+    private RPGTalk _rPGTalk;
+
+    // Character ������, ����� ��������� ���������� ��������� �� ����� �������
+    [SerializeField]
+    private Character _character;
+
+    private TextAssetKeeper _textAssetKeeper;
+
+    private void OnEndTalk()
+    {
+        _rPGTalk.enabled = false;
+        _isClick = true;
+        
+    }
+
+    private void OnNewTalk()
+    {
+        _rPGTalk.enabled = true;
+        _isClick = false;
+        
+    }
+
+    private void Update()
+    {
+        if (_isClick)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                // ����������� ������
+                _rPGTalk.NewTalk("1", "-1", _textAssetKeeper.textAssets[_textAssetKeeper.index]);
+                // ���� ���������� ����� ������� � ��������� � �������� ������ ������, �� ����������� ������ �� 1
+                if (_textAssetKeeper.index + 1 < _textAssetKeeper.textAssets.Count)
+                {
+                    _textAssetKeeper.index++;
+                }
+                else
+                {
+                    // ���� ������� � ������� ���������, �� �� ��������� ����� ��������, ������ ������� ������������ � loopedIndex
+                    if (_textAssetKeeper.isLooped)
+                    {
+                        _textAssetKeeper.index = _textAssetKeeper.loopedIndex;
+                    }
+                }
+                _character.SetInactive();
+            }
+        }
+    }
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        _rPGTalk = collision.gameObject.GetComponent<RPGTalk>();
+        _rPGTalk.OnEndTalk += OnEndTalk;
+        _rPGTalk.OnNewTalk += OnNewTalk;
+        _rPGTalk.OnMadeChoice += OnMadeChoice;
+        _textAssetKeeper = collision.gameObject.GetComponent<TextAssetKeeper>();
+        _isClick = true;
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        _isClick = false;
+    }
+
+    private void OnMadeChoice(string questionID, int choiceID)
+    {
+        switch(questionID)
+        {
+                case "0":
+                {
+                    break;
+                }
+                case "1":
+                {
+>>>>>>> 51c4b30a7758f95dd15d0e3ae0288638ce336c3c
+                    break;
+                }
+        }
+    }
+}

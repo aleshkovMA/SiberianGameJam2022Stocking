@@ -1,0 +1,63 @@
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Playables;
+using UnityEngine.Events;
+using RPGTALK.Timeline;
+
+<<<<<<< HEAD
+
+=======
+>>>>>>> 51c4b30a7758f95dd15d0e3ae0288638ce336c3c
+public class RegistrationForm : MonoBehaviour
+{
+    private GameObject _regisrationForm;
+
+    [SerializeField]
+    private RPGTalk _rPGTalkColya;
+
+    [SerializeField]
+    private PlayableDirector _timelineAfterRegistration;
+
+    [SerializeField]
+    private Character _character;
+
+    private UnityEvent _showBlackImg = new UnityEvent();
+
+    private void Start()
+    {
+        _showBlackImg.AddListener(ShowBlackImg);
+        _regisrationForm = gameObject;
+        _regisrationForm.SetActive(false);
+    }
+
+    public void StartWaitingForInput()
+    {
+        _regisrationForm.SetActive(true);
+    }
+    public void StopWaitingForInput()
+    {
+        _regisrationForm.SetActive(false);
+    }
+
+    public void OnButtonClick()
+    {
+<<<<<<< HEAD
+=======
+        _rPGTalkColya.gameObject.GetComponent<RPGTalkTimeline>().timelineDirector = GameObject.Find("Timeline after registration").GetComponent<PlayableDirector>();
+        _rPGTalkColya.callback = _showBlackImg;
+>>>>>>> 51c4b30a7758f95dd15d0e3ae0288638ce336c3c
+        _timelineAfterRegistration.Play();
+        StopWaitingForInput();
+    }
+
+    void ShowBlackImg()
+    {
+<<<<<<< HEAD
+        GameObject.Find("Black image").GetComponent<Bleacher>().BleachImageAscending("HeroHouse");
+    }
+
+=======
+        GameObject.Find("Black image").GetComponent<Bleacher>().BleachImageAscending();
+    }
+>>>>>>> 51c4b30a7758f95dd15d0e3ae0288638ce336c3c
+}

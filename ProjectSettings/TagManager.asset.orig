@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+<<<<<<< HEAD
+  - BottleOnGround
+  - Target
+  - Friend
+  - Wife
+  - Sanich
+  - Barman
+  - Normal workers
+  - TrashCan
+=======
+  - Emperor
+  - vasya
+>>>>>>> 51c4b30a7758f95dd15d0e3ae0288638ce336c3c
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - floor
+  - Water
+  - UI
+  - Trash
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
